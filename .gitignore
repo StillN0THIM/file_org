@@ -31,3 +31,4 @@ build/
 test_output/
 logs/
 test_output
+move_log.txt
