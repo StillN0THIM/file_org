@@ -1,2 +1,5 @@
 Pillow
 piexif
+transformers
+torch
+chardet

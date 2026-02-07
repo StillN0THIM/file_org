@@ -27,3 +27,7 @@ venv.bak/
 dist/
 build/
 *.egg-info/
+
+test_output/
+logs/
+test_output
