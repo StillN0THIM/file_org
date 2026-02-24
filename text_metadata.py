@@ -7,7 +7,7 @@ from undo_moves import log_move
 WORD_COUNT_TOL = 0.10
 LINE_COUNT_TOL = 0.10
 AVG_LINE_LEN_TOL = 0.10
-RATIO_TOL = 0.10
+RATIO_TOL = 0.05
 
 
 # ---------------- METADATA ----------------
@@ -34,12 +34,35 @@ def extract_metadata(file_path):
         "digit_ratio": digits / chars,
         "symbol_ratio": symbols / chars
     }
+def normalize_name(name):
+    name = os.path.splitext(name)[0].lower()
+    return "".join(c for c in name if c.isalnum())
+
+def name_similarity(a, b):
+    na = normalize_name(a)
+    nb = normalize_name(b)
+
+    if not na or not nb:
+        return 0
+
+    common = os.path.commonprefix([na, nb])
+    return len(common) / max(len(na), len(nb))
 
 # ---------------- SIMILARITY ----------------
 def similar(a, b):
     def within(x, y, tol):
         return abs(x - y) / max(x, y, 1) <= tol
 
+    name_sim = name_similarity(a["name"], b["name"])
+
+    # Name-first boost
+    if name_sim >= 0.05:   # filenames clearly related
+        return (
+            within(a["word_count"], b["word_count"], WORD_COUNT_TOL * 1.5) and
+            within(a["line_count"], b["line_count"], LINE_COUNT_TOL * 1.5)
+        )
+
+    # Otherwise fall back to strict metadata match
     return (
         within(a["word_count"], b["word_count"], WORD_COUNT_TOL) and
         within(a["line_count"], b["line_count"], LINE_COUNT_TOL) and
